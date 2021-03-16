@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <style>
+        table,td{
+            border: 1px black solid;
+        }
+    </style>
+</head>
+<body>
+<form>
+    <input id="phoneName">
+    <input id="phoneBrand">
+    <input type="submit" value="Create" onclick="addPhone()">
+</form>
+<table id="phoneList">
+    <tr>
+        <td>Name</td>
+        <td>Brand</td>
+        <td>Delete</td>
+    </tr>
+
+    <th:block th:each="s:${list}">
+        <tr>
+            <td th:text="${s.name}"></td>
+            <td th:text="${s.brand}"></td>
+            <td ><button class="deletePhone" th:value="${s.id}" onclick="deletePhone($(this))">Delete</button></td>
+        </tr>
+    </th:block>
+
+</table>
+<script>
+    // $(document).ready(
+    //     function () {
+    //         $('.deletePhone').click(
+    //             function (event) {
+    //                 let a=$(this);
+    //                 let idSmartPhone=a.attr("href")
+    //                 $.ajax(
+    //                     {
+    //                         type:"DELETE",
+    //                         //tên API
+    //                         url:"/smartPhones/delete/"+ idSmartPhone,
+    //                         //xử lý khi thành công
+    //                         success: function (data) {
+    //                             a.parent().parent().remove();},
+    //                         // error: alert("failed to delete")
+    //                     }
+    //                 )
+    //                 event.preventDefault();
+    //             }
+    //         )
+    //     }
+    // )
+
+    function addPhone(){
+        let phoneName=$('#phoneName').val();
+        let phoneBrand=$('#phoneBrand').val();
+        let newPhone ={
+            name: phoneName,
+            brand: phoneBrand
+        };
+        $.ajax(
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                data: JSON.stringify(newPhone),
+                url:"/smartPhones/create",
+                //xử lý khi thành công
+                success: successHandler
+            })
+        //chặn sự kiện mặc định của thẻ
+        event.preventDefault();
+    }
+    function successHandler(){
+        $.ajax(
+            {
+                type:"GET",
+                //tên API
+                url:"/smartPhones/list",
+                //xử lý khi thành công
+                success:function (data){
+                    let content=`<tr>
+                               <td>Name</td>
+                               <td>Brand</td>
+                               <td>Delete</td>
+                                              </tr>`
+                    for (let i = 0; i < data.length; i++) {
+                        content+=`<tr>
+                                 <td>${data[i].name}</td>
+                                 <td>${data[i].brand}</td>
+            <td ><button class="deletePhone" value="${data[i].id}" onclick="deletePhone($(this))">Delete</button></td>
+                                 </tr>`
+                    }
+                    document.getElementById('phoneList').innerHTML = content;
+
+                }
+
+            }
+        )
+
+    }
+    function deletePhone(e){
+                        let idSmartPhone=e.val()
+                        $.ajax(
+                            {
+                                type:"DELETE",
+                                //tên API
+                                url:"/smartPhones/delete/"+ idSmartPhone,
+                                //xử lý khi thành công
+                                success: function (data) {
+                                    e.parent().parent().remove();},
+                                 error: function (){
+                                     alert("failed to delete")
+                                 }
+                            }
+                        )
+    }
+
+</script>
+</body>
+</html>
